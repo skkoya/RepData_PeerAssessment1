@@ -1,22 +1,12 @@
----
-html_document:
-    fig_height: 6
-    fig_width: 10
-    highlight: kate
-    keep_md: yes
-    theme: readable
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document: 
-    keep_md: yes
----
+# Reproducible Research: Peer Assessment 1
 
 
 ##1. Loading and preprocessing the data
 Check to see if the data file (activity.csv) is present in the working directory. If not, download the compressed data file from the url.
 
 
-```{r}
+
+```r
 fileName <- "activity.csv"
 zfileName <- "repdata-data-activity.zip"
 if(! file.exists(fileName)) {
@@ -30,7 +20,8 @@ if(! file.exists(fileName)) {
 Check to see if data file (activity.csv) is uncompressed. If not extract data from the compressed file. 
 
 
-```{r}
+
+```r
 if(! file.exists("activity.csv")) {
         message("Extracting the data set files")
         unzip(zipfile=zfileName)
@@ -41,12 +32,26 @@ if(! file.exists("activity.csv")) {
 Load the data file, convert 'variable' date into 'class' date and load required libraries for the analysis. 
 
 
-```{r, echo=TRUE, results='hide', warning=FALSE}
+
+```r
 actData <- read.csv("activity.csv") # Load the data (i.e. read.csv())
 actData$date <- as.POSIXct(actData$date) # Convert dates to POSIXct class dates
 library(ggplot2) #load ggplot2 package
 library(tidyr) #load tidyr package
 library(dplyr) #load dplyr package
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
 ```
 
 
@@ -55,7 +60,8 @@ library(dplyr) #load dplyr package
 
 Number of steps taken at an interval of 5 min for each day were recorded. To get the mean and median number of steps taken per day, number of steps taken in a day should be calculated.
 
-```{r}
+
+```r
 #1. Calculate the total number of steps taken per day.
 gsteps <- group_by(actData, date) #group data by date
 nsteps <- summarise(gsteps, steps = sum(steps, na.rm = TRUE)) #sum steps by day
@@ -73,18 +79,21 @@ ggplot(data = nsteps, aes(x = date, y = steps)) +
                 theme(plot.title = element_text(face="bold"))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
 
 
-The average (mean) number of steps taken per day are `r meanSteps`.
+
+The average (mean) number of steps taken per day are 9354.
 
 
-The median number of steps taken per day are `r medianSteps`.
+The median number of steps taken per day are 10395.
 
 ##3.  What is the average daily activity pattern?
 
 Make a time series plot (i.e type = "l") of the 5 min interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r}
+
+```r
 #1. Calculate mean number of steps taken per 5 min interval
 dsteps <- aggregate(steps ~ interval, data = actData, FUN = mean)
 #2. Find the maximum no of steps in any given 5 min interval
@@ -99,19 +108,22 @@ ggplot(data = dsteps, aes(x = interval, y=steps)) +
         theme(plot.title = element_text(face="bold"))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
 
-On an average across all the days in the datasheet, the 5-minute interval that had maximum number of steps is "`r maxinterval`" and it had "`r maxintervalsteps`" steps in it. 
+
+On an average across all the days in the datasheet, the 5-minute interval that had maximum number of steps is "835" and it had "206" steps in it. 
 
 
 ##4.  Imputing missing values
 
 Calculate and report the total number of missing values in the dataset (i.e total number of rows with NAs)
 
-```{r}
+
+```r
 nasteps <- sum(is.na(actData))
 ```
 
-Total numver of missing values in the dataset are `r nasteps`. 
+Total numver of missing values in the dataset are 2304. 
 
 
 
@@ -132,10 +144,15 @@ Because of the above mentioned reasons, I decided to replace missing values with
 
 Replace missing values with zero steps per interval and create a new dataset that is equal to original dataset with missing data filled. 
 
-```{r}
+
+```r
 actData2 <- actData %>% replace_na(list(steps = 0))
 #Check to see if there are any missing values in new data
 sum(is.na(actData2))
+```
+
+```
+## [1] 0
 ```
 
 
@@ -147,7 +164,8 @@ Do the following with the new dataset.
  4. What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 
-```{r}
+
+```r
 #1. Calculate the total number of steps taken per day with new dataset.
 gsteps2 <- group_by(actData2, date) #group data by date
 nsteps2 <- summarise(gsteps2, steps = sum(steps)) #get the sum of steps per day. 
@@ -165,10 +183,12 @@ ggplot(data = nsteps2, aes(x = date, y = steps)) +
                 theme(plot.title = element_text(face="bold"))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
 
-The average (mean) number of steps taken per day in old dataset are `r meanSteps` and new dataset are `r meanSteps2` and it didn't change. 
 
-The median number of steps taken per day in old dataset are `r medianSteps` and new dataset are 
+The average (mean) number of steps taken per day in old dataset are 9354 and new dataset are 9354 and it didn't change. 
+
+The median number of steps taken per day in old dataset are 10395 and new dataset are 
 10395 and it didn't change. 
 
 In general, replacement of missing values with zero shouldn't affect the new mean. As expected the new mean and median are same as old mean and median. 
@@ -180,7 +200,8 @@ In general, replacement of missing values with zero shouldn't affect the new mea
 Create a new column "day_type"" that specifies if day is weekday or weekend and plot the number of steps taken per interval between weekend and weekday. 
 
 
-```{r}
+
+```r
 #Function dtype will determine if particular day is weekday or weekend. 
 dtype <- function(date) {
         if (weekdays(as.Date(date)) %in% c("Saturday", "Sunday")) 
@@ -200,7 +221,8 @@ ggplot(data = nsteps3, aes(x = interval, y = steps)) +
                 ylab("Number of Steps") +
                 ggtitle("The Number of Steps Taken Per Interval (Weekday Vs. Weekend)")+
                 theme(plot.title = element_text(face="bold"))
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
 
 ###The End
